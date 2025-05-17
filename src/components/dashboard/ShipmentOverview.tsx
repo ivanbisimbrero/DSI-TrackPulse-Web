@@ -25,7 +25,7 @@ async function updateStockInHoldedAPI(productId: string, unitsChange: number, to
     const response = await fetch(`/api/products/${productId}/stock`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ units: unitsChange }),
+      body: JSON.stringify({ quantity: Math.floor(unitsChange) }),
     });
 
     if (!response.ok) {
@@ -267,6 +267,7 @@ export default function ShipmentOverview() {
     }
 
     const currentShipment = shipments[currentShipmentIndex];
+    console.log("Current shipment data:", currentShipment);
     const originalStatus = currentShipment.status;
     const holdedInvoiceId = currentShipment.holdedInvoiceId!;
 
@@ -345,7 +346,7 @@ export default function ShipmentOverview() {
       if (newStatus === 'cancelled' && originalStatus === 'pending-confirmation' && !currentShipment.isOrderConfirmed && user.role === 'logistics') {
         let allStockRestoredInHolded = true;
         for (const item of currentShipment.products) {
-          const success = await updateStockInHoldedAPI(item.productId, item.units, toast);
+          const success = await updateStockInHoldedAPI(item.productId, Math.round(item.units), toast);
           if (!success) {
             allStockRestoredInHolded = false;
           }
